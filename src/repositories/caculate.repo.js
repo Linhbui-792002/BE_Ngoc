@@ -22,7 +22,6 @@ const caculatePptk = async ({ id }) => {
     let result = []
     let arrLiCacl = []
     let totalPms = 0
-
     soilData.map((item, indexLi) => {
         L = item.L
         let itemResult = {}
@@ -30,8 +29,10 @@ const caculatePptk = async ({ id }) => {
         Bi = item.soilType === "Đất set" ? item.B : getBOfPileLenght(item.soilName)
 
         const Li = chialop(L, li)
-        if (totalL <= pileLenght) {
-            Li.map((itemLi, index) => {
+
+        Li.map((itemLi, index) => {
+            totalL += itemLi
+            if (Math.round(totalL * 100) / 100 <= pileLenght || Math.round((Math.round(totalL * 100) / 100 - itemLi) * 100) / 100 < pileLenght) {
                 arrLiCacl.push(itemLi)
 
                 const arrTotalLi = arrLiCacl.slice(0, -1)
@@ -58,10 +59,9 @@ const caculatePptk = async ({ id }) => {
 
                 result.push({ ...itemResult })
 
-            })
-            totalL += L
+            }
+        })
 
-        }
 
     })
 
@@ -94,8 +94,10 @@ const caculateCPT = async ({ id }) => {
         let itemResult = {}
 
         const Li = chialop(L, li)
-        if (totalL <= pileLenght) {
-            Li.map((itemLi, index) => {
+        Li.map((itemLi, index) => {
+            totalL += itemLi
+            if (Math.round(totalL * 100) / 100 <= pileLenght || Math.round((Math.round(totalL * 100) / 100 - itemLi) * 100) / 100 < pileLenght) {
+
                 arrLiCacl.push(itemLi)
 
                 const Qc = item.Qc
@@ -125,11 +127,8 @@ const caculateCPT = async ({ id }) => {
                 itemResult["Pms"] = !isNaN(Pms) ? parseFloat(Pms).toFixed(3) : '_'
 
                 result.push({ ...itemResult })
-
-            })
-            totalL += L
-
-        }
+            }
+        })
 
     })
     const Qcm = soilData.find(item => item.L == L).Qc
@@ -167,8 +166,10 @@ const caculateSPT = async ({ id }) => {
         let itemResult = {}
 
         const Li = chialop(L, li)
-        if (totalL <= pileLenght) {
-            Li.map((itemLi, index) => {
+        Li.map((itemLi, index) => {
+            totalL += itemLi
+            if (Math.round(totalL * 100) / 100 <= pileLenght || Math.round((Math.round(totalL * 100) / 100 - itemLi) * 100) / 100 < pileLenght) {
+
                 arrLiCacl.push(itemLi)
 
                 const liN = itemLi * item.N
@@ -187,15 +188,13 @@ const caculateSPT = async ({ id }) => {
                 itemResult["Pms"] = !isNaN(Pms) ? parseFloat(Pms).toFixed(3) : '_'
 
                 result.push({ ...itemResult })
-
-            })
-            totalL += L
-
-        }
+            }
+        })
 
     })
 
-    const Nm = soilData.find(item => item.L == L).L
+    const Nm = soilData.find(item => item.L == L).N
+    console.log(Nm, 'Nm')
     const Pmui = ((k1 * Ap * Nm) / 2).toFixed(3)
     const Pgh = parseFloat(Pmui) + parseFloat(totalPms)
     return { DataSPT: result, Pmui, Pgh: parseFloat(Pgh).toFixed(3), totalPms: parseFloat(totalPms).toFixed(3) }
