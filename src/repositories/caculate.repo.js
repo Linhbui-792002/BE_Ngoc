@@ -12,7 +12,8 @@ const caculatePptk = async ({ id }) => {
     const pileData = await Pile.findOne({ record: id })
     const soilData = await SoilLayer.find({ record: id })
 
-    const pileLenght = (pileData.hm + pileData.cdtt)
+    const hm = pileData.hm
+    const pileLenght = (hm + pileData.cdtt)
     const a = pileData.a
     const Ap = a * a
     let Bi = 0
@@ -23,7 +24,8 @@ const caculatePptk = async ({ id }) => {
     let arrLiCacl = []
     let totalPms = 0
     soilData.map((item, indexLi) => {
-        L = item.L
+        L = indexLi == 0 ? item.L - hm : item.L
+
         let itemResult = {}
         let B = item.soilType === "Đất sét" ? item.B : getBByNameSand(item.soilName)
         Bi = item.soilType === "Đất set" ? item.B : getBOfPileLenght(item.soilName)
@@ -32,14 +34,15 @@ const caculatePptk = async ({ id }) => {
 
         Li.map((itemLi, index) => {
             totalL += itemLi
-            if (Math.round(totalL * 100) / 100 <= pileLenght || Math.round((Math.round(totalL * 100) / 100 - itemLi) * 100) / 100 < pileLenght) {
-                arrLiCacl.push(itemLi)
+            const totalLiCheck = Math.round((Math.round(totalL * 100) / 100 - itemLi) * 100) / 100
 
+            if (totalLiCheck < pileLenght) {
+                arrLiCacl.push(itemLi)
                 const arrTotalLi = arrLiCacl.slice(0, -1)
 
-                const totalLi = arrTotalLi.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+                const totalLi = arrTotalLi.reduce((accumulator, currentValue) => ((Math.round(accumulator * 100) / 100) + (Math.round(currentValue * 100) / 100)), 0);
 
-                const avgD = arrTotalLi.length == 0 ? (arrLiCacl[0] / li) : (totalLi + arrLiCacl[arrLiCacl.length - 1] / li)
+                const avgD = arrTotalLi.length == 0 ? (hm + arrLiCacl[0] / 2) : (hm + totalLi + arrLiCacl[arrLiCacl.length - 1] / 2)
 
                 const liResult = noiSuy(B, avgD)
                 const liti = (liResult * itemLi)
@@ -77,20 +80,21 @@ const caculateCPT = async ({ id }) => {
     const record = await Record.findOne({ _id: id })
     const pileData = await Pile.findOne({ record: id })
     const soilData = await SoilLayer.find({ record: id })
+    const hm = pileData.hm
 
-    const pileLenght = (pileData.hm + pileData.cdtt)
+    const pileLenght = (hm + pileData.cdtt)
     const a = pileData.a
     const Ap = a * a
     const Uc = a * 4
     const li = record.li
-    let L
+    let L = 0
     let totalL = 0
     let result = []
     let arrLiCacl = []
     let totalPms = 0
 
     soilData.map((item, indexLi) => {
-        L = item.L
+        L = indexLi == 0 ? item.L - hm : item.L
         let itemResult = {}
 
         const Li = chialop(L, li)
@@ -145,8 +149,8 @@ const caculateSPT = async ({ id }) => {
     const record = await Record.findOne({ _id: id })
     const pileData = await Pile.findOne({ record: id })
     const soilData = await SoilLayer.find({ record: id })
-
-    const pileLenght = (pileData.hm + pileData.cdtt)
+    const hm = pileData.hm
+    const pileLenght = (hm + pileData.cdtt)
     const a = pileData.a
     const Ap = a * a
 
@@ -162,7 +166,7 @@ const caculateSPT = async ({ id }) => {
     let totalPms = 0
 
     soilData.map((item, indexLi) => {
-        L = item.L
+        L = indexLi == 0 ? item.L - hm : item.L
         let itemResult = {}
 
         const Li = chialop(L, li)
@@ -194,7 +198,6 @@ const caculateSPT = async ({ id }) => {
     })
 
     const Nm = soilData.find(item => item.L == L).N
-    console.log(Nm, 'Nm')
     const Pmui = ((k1 * Ap * Nm) / 2).toFixed(3)
     const Pgh = parseFloat(Pmui) + parseFloat(totalPms)
     return { DataSPT: result, Pmui, Pgh: parseFloat(Pgh).toFixed(3), totalPms: parseFloat(totalPms).toFixed(3) }

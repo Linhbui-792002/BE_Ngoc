@@ -19,6 +19,7 @@ export const noiSuy = (B, avgD) => {
 
     const Y1 = B2 != B1 ? a + ((B - B1) * (b - a)) / (B2 - B1) : getValueDataTau(L1, B)
     const Y2 = B2 != B1 ? c + ((B - B1) * (d - c)) / (B2 - B1) : getValueDataTau(L2, B)
+
     return (Y1 + ((avgD - L1) * (Y2 - Y1)) / (L2 - L1)).toFixed(3) || 0
 }
 
